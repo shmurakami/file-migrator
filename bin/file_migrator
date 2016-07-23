@@ -1,6 +1,13 @@
 #!/usr/bin/env php
 
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
 
+$command = new shmurakami\FileMigrator\Console\Command($argv);
+if (!$command->validate()) {
+    echo 'Invalid Arguments' . PHP_EOL;
+    exit(1);
+}
 
-
+$result = $command->migrate();
+exit($result);
