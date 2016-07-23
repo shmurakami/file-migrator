@@ -1,0 +1,17 @@
+{
+    "name": "shmurakami/file-migrator",
+    "description": "Change file path with namespace",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "shmurakami",
+            "email": "shmurakami1104@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "shmurakami\\FileMigrator\\": "src/"
+        }
+    }
+}
