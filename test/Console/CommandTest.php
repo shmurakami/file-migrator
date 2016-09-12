@@ -85,9 +85,36 @@ class CommandTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($this->command->validate());
     }
 
-    function testMigrate()
+    function testMigrate_file()
     {
-        $this->markTestSkipped(__METHOD__);
+        $filesystem = \Mockery::spy(\shmurakami\FileMigrator\File\Filesystem::class);
+        $command = new shmurakami\FileMigrator\Console\Command($filesystem, ['cmd', '-f', 'file', '-o', 'output', '-n']);
+
+        $filesystem->shouldReceive('copy')->once()->andReturn(true);
+        $this->assertEquals(shmurakami\FileMigrator\Console\Command::EXIT_CORRECTLY, $command->migrate());
+        $filesystem->mockery_verify();
     }
 
+    function testMigrate_dir()
+    {
+        $filesystem = \Mockery::spy(\shmurakami\FileMigrator\File\Filesystem::class);
+        $command = new shmurakami\FileMigrator\Console\Command($filesystem, ['cmd', '-d', 'dir', '-o', 'output', '-n']);
+
+        $filesystem->shouldReceive('files')->andReturn(['file1', 'file2']);
+        $filesystem->shouldReceive('copy')->twice()->andReturn(true);
+        $this->assertEquals(shmurakami\FileMigrator\Console\Command::EXIT_CORRECTLY, $command->migrate());
+        $filesystem->mockery_verify();
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    function testMigrate_failedToCopy()
+    {
+        $filesystem = \Mockery::spy(\shmurakami\FileMigrator\File\Filesystem::class);
+        $command = new shmurakami\FileMigrator\Console\Command($filesystem, ['cmd', '-f', 'file', '-o', 'output']);
+
+        $filesystem->shouldReceive('copy')->andReturn(false);
+        $command->migrate();
+    }
 }

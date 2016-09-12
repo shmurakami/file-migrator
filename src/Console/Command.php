@@ -100,7 +100,52 @@ class Command
      */
     public function migrate()
     {
+        // TODO support subdirectories recursively
+
+        $file = $this->getFile();
+        if ($file) {
+            $files = [$file];
+        } else {
+            $files = $this->filesystem->files($this->getDirectory());
+        }
+
+        $output = $this->getOutput();
+
+        $migrateNamespace = $this->isMigrateNamespace();
+
+        foreach ($files as $file) {
+            $result = $this->filesystem->copy($file, $output);
+            if (!$result) {
+                throw new \RuntimeException("Failed to copy $file");
+            }
+
+            if ($migrateNamespace) {
+                $destFile = $output . DIRECTORY_SEPARATOR . $file;
+                $this->setPsr4Namespace($destFile);
+            }
+        }
+
         return self::EXIT_CORRECTLY;
+    }
+
+    /**
+     * add namespace to file based on PSR-4
+     * @param string $filePath
+     */
+    public function setPsr4Namespace($filePath)
+    {
+        // TODO little hard to know having namespace or not. do with cheap way once.
+        $src = $this->filesystem->get($filePath);
+
+        $namespace = ''; // TODO ここでnamespaceを拾って
+
+        if (preg_match('/namespace\s+?(.+?);/', $src)) {
+            preg_replace('/namespace\s+?(.+?);/', $namespace, $src, 1);
+        } else {
+            preg_replace('<?php', "<?php\nnamespace $namespace;", $src, 1);
+        }
+
+        $this->filesystem->put($filePath, $src);
     }
 
     public function disableNamespace()
